@@ -28,11 +28,12 @@ This project....
 
 1. Preprocess your facebook data to create input data file; see ```fbparser/README```
 
-2. Use MapReduce to create prefix trees of all your conversations; One file will be produced per person. Run ```go run wc.go master x.txt sequential```
+2. Use MapReduce to create prefix trees of all your conversations; One file will be produced per person. Run ```go run wc.go master <PARSED_INPUT_FILE.txt> sequential```
 
-3. Generate a stacked bar graph via: ```go run wc.go graph stack-hist mrtmp.x.txt <number of result files>```
+3. Generate a stacked bar graph via: ```go run wc.go graph stack-hist mrtmp.<PARSED_INPUT_FILE.txt> <Number of friends to evaluate>```
 
+	* Note: E.g., 'Number of friends' to evalutate is usually 3
 
-## Notes:
+4. Cleanup temp files via: ```./cleanup.sh```
 
-* wc.go is modified from the original files provided in UVic's CSC 462's Cource
+5. View results in: FabulousFacebookFriends.png
