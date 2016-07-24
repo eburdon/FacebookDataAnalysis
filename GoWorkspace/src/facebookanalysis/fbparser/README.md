@@ -1,7 +1,10 @@
 # Preprocessing with fbparser.py
 
-To preprocess data:        
-```pip install -r requirements.txt```
+Installation:
+```
+./install_deps.sh
+pip install -r requirements.txt
+```
 
 # assuming that messages.htm is in the current directory...
 ```python fbparser.py > input_data.txt```
