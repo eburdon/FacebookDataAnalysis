@@ -13,7 +13,7 @@ import (
     "strconv"
     "strings"
 
-    "github.com/fvbock/trie"
+    "github.com/jordan-heemskerk/trie"
     "github.com/ajstarks/svgo"
     "github.com/vdobler/chart"
     "github.com/vdobler/chart/imgg"
@@ -190,7 +190,7 @@ func BakePie(fileName string) {
 }
 
 func TallyHourlyMessages(item ParsedPair) []float64{
-  itemTrie, _ := trie.LoadFromFile(item.Trie.PrefixTree)
+  itemTrie, _ := trie.FromBase64String(item.Trie.PrefixTree)
 
   var hourList []float64
   for h := 0; h < 24; h++ {

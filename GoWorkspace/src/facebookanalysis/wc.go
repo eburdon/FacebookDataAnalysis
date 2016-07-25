@@ -10,7 +10,7 @@ import "strings"
 import "strconv"
 import "log"
 import "encoding/json"
-import "github.com/fvbock/trie"
+import "github.com/jordan-heemskerk/trie"
 
 var pattern *regexp.Regexp
 
@@ -78,12 +78,9 @@ func Reduce(key string, values *list.List) {
         t.Add(e.Value.(string))
     }
 
-    // Key value pair to output; total number of messages and string dump of tree
-    // The vdobler trie library does not support direct encoding/decoding of prefix trees
-    // as such, we can't just store a dump of the tree in the struct. We write to a file to be read later
-    treeFile := "00-" + key + "-Trie"
-    t.DumpToFile(treeFile)
-    ntp := NameTreePair{Total: total, PrefixTree: treeFile}
+
+    b64_trie, _ := t.ToBase64String()
+    ntp := NameTreePair{Total: total, PrefixTree: b64_trie}
 
     encoded, err := json.Marshal(ntp)
 
