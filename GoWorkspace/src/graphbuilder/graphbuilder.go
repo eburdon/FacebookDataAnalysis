@@ -238,43 +238,37 @@ func BuildGraph(baseFileName string, nFiles string, graphType string) {
 
     var firstPair, secondPair, thirdPair ParsedPair
 
-    NFiles, _ := strconv.Atoi(nFiles)
+    fileName := baseFileName
 
-    for i:=0; i < NFiles; i++ {
-      n := strconv.Itoa(i)
+    // open and read results file
+    file, _ := os.Open(fileName)
+    defer file.Close()
 
-      fileName := baseFileName + "-res-" + n
+    scanner := bufio.NewScanner(file)
+    var line string
 
-      // open and read results file
-      file, _ := os.Open(fileName)
-      defer file.Close()
+    for scanner.Scan() {
+      line = scanner.Text()
 
-      scanner := bufio.NewScanner(file)
-      var line string
+      var curr ParsedPair
+      var fp FilePair
+      var ntp NameTreePair
+      
+      // read line: {Key, Value} pair
+      _ = json.Unmarshal([]byte(line), &fp)
+      curr.Key = fp.Key
 
-      for scanner.Scan() {
-        line = scanner.Text()
+      // read value's name tree pair 
+      _ = json.Unmarshal([]byte(fp.Value), &ntp)
+      curr.Trie = ntp
 
-        var curr ParsedPair
-        var fp FilePair
-        var ntp NameTreePair
-        
-        // read line: {Key, Value} pair
-        _ = json.Unmarshal([]byte(line), &fp)
-        curr.Key = fp.Key
-
-        // read value's name tree pair 
-        _ = json.Unmarshal([]byte(fp.Value), &ntp)
-        curr.Trie = ntp
-
-        // compare and determine if current trie is within (ordered) top 3
-        if curr.Trie.Total > firstPair.Trie.Total {
-          firstPair = curr
-        } else if curr.Trie.Total > secondPair.Trie.Total {
-          secondPair = curr
-        } else if curr.Trie.Total > thirdPair.Trie.Total {
-          thirdPair = curr
-        }
+      // compare and determine if current trie is within (ordered) top 3
+      if curr.Trie.Total > firstPair.Trie.Total {
+        firstPair = curr
+      } else if curr.Trie.Total > secondPair.Trie.Total {
+        secondPair = curr
+      } else if curr.Trie.Total > thirdPair.Trie.Total {
+        thirdPair = curr
       }
     }
 
