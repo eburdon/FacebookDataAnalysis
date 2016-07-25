@@ -1,8 +1,8 @@
 package main
 
 import "os"
+import "io/ioutil"
 import "fmt"
-import "mapreduce"
 import "graphbuilder"
 import "container/list"
 import "regexp"
@@ -14,17 +14,20 @@ import "github.com/fvbock/trie"
 
 var pattern *regexp.Regexp
 
+type KeyValue struct {
+    Key string
+    Value string
+}
+
 type NameTreePair struct {
     Total   int
     PrefixTree string
 }
 
-func Map(value string) *list.List {
+func Map(value string) {
 
     fs := strings.Split(value,"\n")
 
-    var l = new(list.List)
-    
     for _, v := range fs {
 
         // Slice with: [wholematch, "Name", "DoW", "HH", "MM"]
@@ -56,22 +59,16 @@ func Map(value string) *list.List {
             // build value
             v := sHH + MM
 
-            l.PushBack(mapreduce.KeyValue{Key: name, Value: v})
+            fmt.Printf("%s\t%s\n", name, v)
 
-        } else {
-            fmt.Printf("Empty line; Unable to parse a line of the file: " + v)
         }
     }
-/*  for k, v := range counts {
-        l.PushBack(mapreduce.KeyValue{Key: k, Value: strconv.Itoa(v)})
-    }
-*/
     
-    return l
 }
 
-func Reduce(key string, values *list.List) string {
-    // Create a new key result trie
+func Reduce(key string, values *list.List) {
+
+   // Create a new key result trie
     t := trie.NewTrie()
     total := 0
 
@@ -91,35 +88,92 @@ func Reduce(key string, values *list.List) string {
     encoded, err := json.Marshal(ntp)
 
     if err != nil {
-        fmt.Println("Error: ",  err)
+        log.Fatal(err)
     }
 
-    return string(encoded)
+    kv := KeyValue{Key: key, Value: string(encoded)}
+
+    kv_encoded, err := json.Marshal(kv)
+
+    if err != nil {
+         log.Fatal(err)
+    }
+
+    fmt.Printf("%s\n", string(kv_encoded))
 }
 
-// Mapper can be run in 3 ways:
-// 1) Sequential (e.g., go run wc.go master x.txt sequential)
-// 2) Master (e.g., go run wc.go master x.txt localhost:7777)
-// 3) Worker (e.g., go run wc.go worker localhost:7777 localhost:7778 &)
-// Graphbuilder can be built using the base input file name via:
-// 1) go run wc.go graph stack-hist x.txt 3
+func MapReduce(operation string) {
+
+    // TODO: buffer this
+    bytes, err := ioutil.ReadAll(os.Stdin)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    input := string(bytes) 
+
+    if (operation == "map") {
+
+        Map(input)
+
+    } 
+
+    if (operation == "reduce") {
+
+        fs := strings.Split(input,"\n")
+
+        vals := list.New()
+
+        current_key := strings.Split(fs[0],"\t")[0]
+
+
+	// Hadoop will sort the output from map phase
+        // by key first, making this possible
+        for _, v := range fs {
+ 
+            if len(v) == 0 {
+                continue
+            }
+
+            split := strings.Split(v, "\t")
+            k := split[0]
+            v := split[1]
+
+            vals.PushBack(v)
+
+            if (k != current_key) {
+
+                // Call our old reduce function
+                Reduce(current_key, vals)    
+                current_key = k
+                vals = list.New()
+
+            }
+
+        }
+
+    }
+
+
+}
+
+/**
+ * This program can be run in two ways:
+ * 1) MapReduce
+ *     a) go run wc.go map 
+ *     b) go run wc.go reduce
+ * 	
+ * 2) Graphbuilder can be built using the base input file name via:
+ *     go run wc.go graph stack-hist x.txt 3
+ *
+ */
 func main() {
     pattern = regexp.MustCompile("(.*);([\\w]*),[\\w]*,[\\w]*,[\\w]*,(\\d*):(\\d*)")
 
     switch len(os.Args) {
-    case 4:
-        // Original implementation
-        if os.Args[1] == "master" {
-            if os.Args[3] == "sequential" {
-                mapreduce.RunSingle(5, 3, os.Args[2], Map, Reduce)
-            } else {
-                mr := mapreduce.MakeMapReduce(5, 3, os.Args[2], os.Args[3])
-                // Wait until MR is done
-                <-mr.DoneChannel
-            }
-        } else {
-            mapreduce.RunWorker(os.Args[2], os.Args[3], Map, Reduce, 100)
-        }
+    case 2:
+          MapReduce(os.Args[1]) 
     case 5:
         // Graph building
         if os.Args[2] == "stack-hist" {
