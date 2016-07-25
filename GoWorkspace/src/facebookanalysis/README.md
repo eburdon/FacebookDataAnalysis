@@ -15,12 +15,6 @@ This project....
 │   └── wc.go
 ├── graphbuilder
 │   └── graphbuilder.go
-└── mapreduce
-    ├── common.go
-    ├── mapreduce.go
-    ├── master.go
-    ├── test_test.go
-    └── worker.go
 ```
 
 
@@ -28,9 +22,9 @@ This project....
 
 1. Preprocess your facebook data to create input data file; see ```fbparser/README```
 
-2. Use MapReduce to create prefix trees of all your conversations; One file will be produced per person. Run ```go run wc.go master <PARSED_INPUT_FILE.txt> sequential```
+2. Use MapReduce to create prefix trees of all your conversations; One file will be produced per person. Run ```cat input.txt | go run wc.go map | sort | go run wc.go reduce | sort > output.txt```
 
-3. Generate a stacked bar graph via: ```go run wc.go graph stack-hist mrtmp.<PARSED_INPUT_FILE.txt> <Number of friends to evaluate>```
+3. Generate a stacked bar graph via: ```go run wc.go graph stack-hist output.txt 3```
 
 	* Note: E.g., 'Number of friends' to evalutate is usually 3
 
