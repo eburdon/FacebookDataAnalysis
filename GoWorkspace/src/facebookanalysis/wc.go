@@ -171,10 +171,10 @@ func main() {
     switch len(os.Args) {
     case 2:
           MapReduce(os.Args[1]) 
-    case 5:
+    case 6:
         // Graph building
         if os.Args[2] == "stack-hist" {
-            graphbuilder.BuildGraph(os.Args[3], os.Args[4], os.Args[2])
+            graphbuilder.BuildGraph(os.Args[3], os.Args[4], os.Args[2], os.Args[5])
         }
     default:
         fmt.Printf("%s: see usage comments in file\n", os.Args[0])

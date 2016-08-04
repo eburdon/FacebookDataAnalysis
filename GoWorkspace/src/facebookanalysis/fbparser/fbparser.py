@@ -4,13 +4,17 @@ from bs4 import BeautifulSoup
 
 class FacebookMessageParser(object):
 
+    def __init__(self, ifh, ofh):
+        self.input_fh = ifh
+        self.output_fh = ofh
+
     def parser(self):
         # indexing constants
         WEEKDAY = 0
         MONTH = 1
         YEAR = 2
 
-        soup = BeautifulSoup(open("messages.htm"), "lxml")
+        soup = BeautifulSoup(self.input_fh, "lxml")
 
         user_title = soup.title.string
         user_name = user_title.split(" -")
@@ -52,14 +56,18 @@ class FacebookMessageParser(object):
             # save time without am/pm suffix
             meta_time = raw_time[:-2]
 
+            line_string = ""
+
             try:
                 # don't print messages sent to self or old [deleted] users
                 if user_name != meta_user_text and "@facebook" not in meta_user_text:
                     # print data to file e.g., Billy Mays;Sunday,April,5,2015,8:44
-                    print '%s;%s,%s,%s,%s,%s' % (meta_user_text, meta_weekday, meta_month, meta_date, meta_year, meta_time)
+                    line_string =  '%s;%s,%s,%s,%s,%s\n' % (meta_user_text, meta_weekday, meta_month, meta_date, meta_year, meta_time)
+                    self.output_fh.write(line_string)
             except (UnicodeDecodeError, UnicodeEncodeError) as e:
-                print "Unable to encode/decode this line"
+                line_string = "Unable to encode/decode this line\n"
+                self.output_fh.write(line_string)
                         
 if __name__ == "__main__":
-    fb = FacebookMessageParser()
+    fb = FacebookMessageParser(open("messages.htm"), open("output.txt", "w"))
     fb.parser()
