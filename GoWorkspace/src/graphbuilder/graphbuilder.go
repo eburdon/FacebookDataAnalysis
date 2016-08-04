@@ -204,9 +204,9 @@ func TallyHourlyMessages(item ParsedPair) []float64{
   return hourList
 }
 
-func BuildStackedHistogram(first ParsedPair, second ParsedPair, third ParsedPair) {
+func BuildStackedHistogram(first ParsedPair, second ParsedPair, third ParsedPair, outname string) {
   graphName := "Fabulous Facebook Friends"
-  dumper := NewDumper(graphName, 2, 2, 1000, 500)
+  dumper := NewDumper(outname, 2, 2, 1000, 500)
   defer dumper.Close()
 
   hist := chart.BarChart{Title: graphName, Stacked: true}
@@ -234,7 +234,7 @@ func BuildStackedHistogram(first ParsedPair, second ParsedPair, third ParsedPair
   dumper.Plot(&hist)
 }
 
-func BuildGraph(baseFileName string, nFiles string, graphType string) {
+func BuildGraph(baseFileName string, nFiles string, graphType string, outname string) {
 
     var firstPair, secondPair, thirdPair ParsedPair
 
@@ -273,6 +273,6 @@ func BuildGraph(baseFileName string, nFiles string, graphType string) {
     }
 
     // TODO: Route graph construction based on graphType
-    BuildStackedHistogram(firstPair, secondPair, thirdPair)
+    BuildStackedHistogram(firstPair, secondPair, thirdPair, outname)
     // BakePie(baseFileName)
 }
