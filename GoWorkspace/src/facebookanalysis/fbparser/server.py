@@ -8,12 +8,17 @@ from subprocess import call
 from boto.s3.connection import S3Connection
 from boto.s3.connection import Key
 
+CLUSTER_ID="j-34XMKVYJ9UEFW"
+BUCKET="facebook-analysis"
+BINARY="s3://facebook-analysis/bin/wc"
+
+
 @route('/start_job/<name>')
 def index(name):
 
     conn = S3Connection()
 
-    mybucket = conn.get_bucket("facebook-analysis")
+    mybucket = conn.get_bucket(BUCKET)
 
     key_name = 'raw/' + name
 
@@ -31,7 +36,13 @@ def index(name):
     pk = Key(mybucket, pre_name)
     pk.set_contents_from_string(out_stream.getvalue())
 
+
     # Fire MR job here
+    cmd = ['/usr/local/bin/aws', 'emr', 'add-steps',
+          '--cluster-id', CLUSTER_ID,
+          '--steps', '[{"Args":["-files","' + BINARY + '","-mapper","wc map","-reducer","wc reduce","-input","s3://' + BUCKET + '/pre/' + name + '","-output","s3://' + BUCKET + '/post/' + name + '"],"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"/home/hadoop/contrib/streaming/hadoop-streaming.jar","Properties":"","Name":"Faceboon Analysis MapReduce"}]']
+    
+    call(cmd)
 
 
     return template("Success {{name}}", name=name)
@@ -42,7 +53,7 @@ def index(name):
     
     conn = S3Connection()
 
-    mybucket = conn.get_bucket("facebook-analysis")
+    mybucket = conn.get_bucket(BUCKET)
 
     prefix = 'post/' + name
 
