@@ -69,5 +69,7 @@ class FacebookMessageParser(object):
                 self.output_fh.write(line_string)
                         
 if __name__ == "__main__":
+    print "RUNNING MAIN FB PARSER"
+    # local execution
     fb = FacebookMessageParser(open("messages.htm"), open("output.txt", "w"))
     fb.parser()
